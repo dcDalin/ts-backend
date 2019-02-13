@@ -1,21 +1,12 @@
 import 'reflect-metadata';
-import { ApolloServer, gql } from 'apollo-server-express';
+import { ApolloServer } from 'apollo-server-express';
 import * as express from 'express';
+import typeDefs from './typeDefs';
+import resolvers from './resolvers';
 
-// The GraphQL schema
-const typeDefs = gql`
-  type Query {
-    "A simple type for getting started!"
-    hello: String
-  }
-`;
+const { APP_PORT = 4000, NODE_ENV = 'development' } = process.env;
 
-// A map of functions which return data for the schema.
-const resolvers = {
-  Query: {
-    hello: () => 'World!!!'
-  }
-};
+const IN_PROD = NODE_ENV === 'production';
 
 const app = express();
 
@@ -23,11 +14,14 @@ app.disable('x-powered-by');
 
 const server = new ApolloServer({
   typeDefs,
-  resolvers
+  resolvers,
+  playground: !IN_PROD
 });
 
 server.applyMiddleware({ app });
 
 app.listen({ port: 4000 }, () =>
-  console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`)
+  console.log(
+    `🚀 Server ready at http://localhost:${APP_PORT}${server.graphqlPath}`
+  )
 );
